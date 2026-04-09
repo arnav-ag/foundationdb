@@ -50,11 +50,13 @@ function cleanup {
     echo "$(date -Iseconds) cleanup: shutdown_mocks3 not available"
   fi
   
-  echo "$(date -Iseconds) cleanup: shutting down AWS"
+  echo "$(date -Iseconds) cleanup: shutting down cloud provider"
   if type shutdown_aws &> /dev/null; then
     shutdown_aws "${TEST_SCRATCH_DIR}"
+  elif type shutdown_azure &> /dev/null; then
+    shutdown_azure "${TEST_SCRATCH_DIR}"
   else
-    echo "$(date -Iseconds) cleanup: shutdown_aws not available"
+    echo "$(date -Iseconds) cleanup: no cloud provider shutdown needed"
   fi
   
   # Clean up encryption key file

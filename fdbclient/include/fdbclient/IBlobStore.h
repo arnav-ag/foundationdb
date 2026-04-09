@@ -91,7 +91,9 @@ struct BlobKnobs {
 			"sdk_auth (or sa)                      Use AWS SDK to resolve credentials. Only valid if "
 			"BUILD_AWS_BACKUP is enabled.",
 			"enable_object_integrity_check (or eoic) Enable integrity check on GET requests (Default: false).",
-			"global_connection_pool (or gcp)       Enable shared connection pool between all blobstore instances."
+			"global_connection_pool (or gcp)       Enable shared connection pool between all blobstore instances.",
+			"provider (or p)                       Blob store provider: s3 (default) or azure.",
+			"ms_sk_auth (or mska)                  For Azure: use Shared Key auth instead of Bearer token."
 		};
 	}
 

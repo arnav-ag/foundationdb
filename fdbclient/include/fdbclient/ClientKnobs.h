@@ -242,6 +242,8 @@ public:
 
 	bool HTTP_REQUEST_AWS_V4_HEADER; // setting this knob to true will enable AWS V4 style header.
 	std::string BLOBSTORE_ENCRYPTION_TYPE;
+	std::string BLOBSTORE_MS_CPK_KEY;
+	std::string BLOBSTORE_MS_ENCRYPTION_SCOPE;
 	int BLOBSTORE_CONNECT_TRIES;
 	int BLOBSTORE_CONNECT_TIMEOUT;
 	int BLOBSTORE_MAX_CONNECTION_LIFE;
