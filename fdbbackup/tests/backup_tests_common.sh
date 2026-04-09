@@ -19,7 +19,7 @@
 # limitations under the License.
 #
 # Common backup test functions
-# Shared between s3_backup_test.sh, s3_backup_bulkdump_bulkload.sh, dir_backup_test.sh, etc.
+# Shared between backup_restore_test.sh, s3_backup_bulkdump_bulkload.sh, dir_backup_test.sh, etc.
 # These functions work with both S3/blobstore and file-based backup testing
 
 # Helper function to add base arguments (cluster file and logging)
@@ -81,7 +81,7 @@ function s3_preclear_url {
   local credentials="${4}"
   
   if [[ "${USE_S3}" != "true" ]]; then
-    # MockS3Server - buckets are lazily created, skip preclear
+    # MockS3Server / GCS / Azure - buckets are lazily created or preclear not needed
     return 0
   fi
   
@@ -110,8 +110,8 @@ function s3_cleanup_url {
   local cmd=("${local_build_dir}/bin/s3client")
   cmd+=("${KNOBS[@]}")
   
-  # Only add TLS CA file for real S3, not MockS3Server
-  if [[ "${USE_S3}" == "true" ]]; then
+  # Only add TLS CA file for real cloud providers, not MockS3Server
+  if [[ "${USE_S3}" == "true" || "${USE_GCS:-false}" == "true" || "${USE_AZURE:-false}" == "true" ]]; then
     cmd+=("--tls-ca-file" "${TLS_CA_FILE}")
   fi
   
@@ -520,29 +520,32 @@ function run_restore_wait {
 function setup_backup_test_environment {
   local http_verbose_level="${1}"
   local additional_knobs=("${@:2}")
-  
+
   # Clear proxy environment variables
   unset HTTP_PROXY
   unset HTTPS_PROXY
-  
+
   # Set USE_S3 based on environment
   readonly USE_S3="${USE_S3:-$( if [[ -n "${OKTETO_NAMESPACE+x}" ]]; then echo "true" ; else echo "false"; fi )}"
-  
-  # Set KNOBS based on whether we're using real S3 or MockS3Server
+
+  # Detect GCS/Azure from environment variables
+  detect_blobstore_provider
+
+  # Set KNOBS based on which provider we're using
   if [[ "${USE_S3}" == "true" ]]; then
     # Use AWS KMS encryption for real S3
     KNOBS=("--knob_blobstore_encryption_type=aws:kms" "--knob_http_verbose_level=${http_verbose_level}")
   else
-    # No encryption for MockS3Server
+    # No KMS encryption for MockS3Server, GCS, or Azure
     KNOBS=("--knob_http_verbose_level=${http_verbose_level}")
   fi
-  
+
   # Add any additional knobs (handle empty array when set -u is enabled)
   if [[ ${#additional_knobs[@]} -gt 0 ]]; then
     KNOBS+=("${additional_knobs[@]}")
   fi
   readonly KNOBS
-  
+
   setup_tls_ca_file
 }
 
